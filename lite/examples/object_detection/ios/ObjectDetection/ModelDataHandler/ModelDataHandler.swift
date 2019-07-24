@@ -28,6 +28,7 @@ struct Inference {
   let className: String
   let rect: CGRect
   let displayColor: UIColor
+    var hasScanned: Bool
 }
 
 /// Information about a model file or labels file.
@@ -220,7 +221,8 @@ class ModelDataHandler: NSObject {
       let inference = Inference(confidence: score,
                                 className: outputClass,
                                 rect: newRect,
-                                displayColor: colorToAssign)
+                                displayColor: colorToAssign,
+                                hasScanned: false)
       resultsArray.append(inference)
     }
 

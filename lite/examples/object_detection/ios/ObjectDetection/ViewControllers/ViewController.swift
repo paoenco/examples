@@ -35,6 +35,9 @@ class ViewController: UIViewController {
   private let expandThransitionThreshold: CGFloat = 30.0
   private let delayBetweenInferencesMs: Double = 200
 
+    private let scanner = CarRecognizer()
+    private var pixelBuffer: CVPixelBuffer?
+
   // MARK: Instance Variables
   private var initialBottomSpace: CGFloat = 0.0
 
@@ -231,6 +234,7 @@ extension ViewController: CameraFeedManagerDelegate {
 
     let width = CVPixelBufferGetWidth(pixelBuffer)
     let height = CVPixelBufferGetHeight(pixelBuffer)
+    self.pixelBuffer = pixelBuffer
 
     DispatchQueue.main.async {
 
@@ -263,7 +267,11 @@ extension ViewController: CameraFeedManagerDelegate {
 
     var objectOverlays: [ObjectOverlay] = []
 
-    for inference in inferences {
+    for var inference in inferences where inference.className == "car" {
+
+
+
+
 
       // Translates bounding box rect to current view.
       var convertedRect = inference.rect.applying(CGAffineTransform(scaleX: self.overlayView.bounds.size.width / imageSize.width, y: self.overlayView.bounds.size.height / imageSize.height))
@@ -287,6 +295,34 @@ extension ViewController: CameraFeedManagerDelegate {
       let confidenceValue = Int(inference.confidence * 100.0)
       let string = "\(inference.className)  (\(confidenceValue)%)"
 
+        if inference.confidence >= 0.6 && inference.hasScanned == false {
+            let image = cameraFeedManager.image!
+//            if let pixelBuffer = pixelBuffer {
+//                let image = UIImage(pixelBuffer: pixelBuffer)!
+////                let crop = image.crop(rect: convertedRect)!
+
+                scanner.recognize(image, success: { (spec) in
+                    print("aaaaa make: \(spec.make) model: \(spec.model) conf score: \(spec.confScore)")
+                }) {
+                    print("aaaaa failure from cyclops");
+                }
+                //            return
+//            }
+//            print("aaaaa confidence is greater than 60%, send this to cyclops")
+//            let renderer = UIGraphicsImageRenderer(bounds: previewView.layer.bounds)
+//            let image = renderer.image { (context) in
+//                previewView.layer.render(in: context.cgContext)
+//            }
+//
+//
+//            inference.hasScanned = true
+//            scanner.recognize(image, success: { (spec) in
+//                print("aaaaa make: \(spec.make) model: \(spec.model)")
+//            }) {
+//                print("aaaaa failure from cyclops");
+//            }
+        }
+
       let size = string.size(usingFont: self.displayFont)
 
       let objectOverlay = ObjectOverlay(name: string, borderRect: convertedRect, nameStringSize: size, color: inference.displayColor, font: self.displayFont)
@@ -298,6 +334,13 @@ extension ViewController: CameraFeedManagerDelegate {
     self.draw(objectOverlays: objectOverlays)
 
   }
+
+//    func asImage(rect: CGRect) -> UIImage {
+//        let renderer = UIGraphicsImageRenderer(bounds: rect)
+//        return renderer.image { rendererContext in
+//            layer.render(in: rendererContext.cgContext)
+//        }
+//    }
 
   /** Calls methods to update overlay view with detected bounding boxes and class names.
    */

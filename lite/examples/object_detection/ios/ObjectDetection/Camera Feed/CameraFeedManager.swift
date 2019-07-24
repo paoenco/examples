@@ -65,6 +65,7 @@ enum CameraConfiguration {
  */
 class CameraFeedManager: NSObject {
 
+        public var image: UIImage?
   // MARK: Camera Related Instance Variables
   private let session: AVCaptureSession = AVCaptureSession()
   private let previewView: PreviewView
@@ -335,6 +336,7 @@ extension CameraFeedManager: AVCaptureVideoDataOutputSampleBufferDelegate {
     // Converts the CMSampleBuffer to a CVPixelBuffer.
     let pixelBuffer: CVPixelBuffer? = CMSampleBufferGetImageBuffer(sampleBuffer)
 
+    image = UIImage.imageFromSampleBuffer(sampleBuffer)
     guard let imagePixelBuffer = pixelBuffer else {
       return
     }
@@ -342,5 +344,4 @@ extension CameraFeedManager: AVCaptureVideoDataOutputSampleBufferDelegate {
     // Delegates the pixel buffer to the ViewController.
     delegate?.didOutput(pixelBuffer: imagePixelBuffer)
   }
-
 }

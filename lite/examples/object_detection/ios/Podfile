@@ -7,5 +7,6 @@ target 'ObjectDetection' do
 
   # Pods for ObjectDetection
   pod 'TensorFlowLiteSwift'
+  pod 'Alamofire'
 
 end
